@@ -92,7 +92,8 @@ def page_not_found(error):
 @app.errorhandler(HTTPStatus.INTERNAL_SERVER_ERROR)
 def internal_error(error):
     accept_type = request.accept_mimetypes.best_match(
-            ['text/html', 'application/json'])
+        ['text/html', 'application/json']
+    )
     if (
         request.path.startswith('/api/')
         or request.is_json
