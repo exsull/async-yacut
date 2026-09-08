@@ -40,11 +40,11 @@ async def get_upload_url(session, filename):
 async def upload_file(session, file, upload_url):
     """Загрузить файл на Яндекс Диск."""
     file_stream = getattr(file, 'stream', file)
-    file.stream.seek(0)
+    file_stream.seek(0)
 
     async with session.put(
         upload_url,
-        data=file.stream,
+        data=file_stream,
     ) as response:
         response.raise_for_status()
 
