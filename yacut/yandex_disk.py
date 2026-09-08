@@ -42,9 +42,11 @@ async def upload_file(session, file, upload_url):
     file_stream = getattr(file, 'stream', file)
     file_stream.seek(0)
 
+    file_data = file_stream.read()
+
     async with session.put(
         upload_url,
-        data=file_stream,
+        data=file_data,
     ) as response:
         response.raise_for_status()
 
