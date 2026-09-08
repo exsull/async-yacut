@@ -39,6 +39,7 @@ async def get_upload_url(session, filename):
 
 async def upload_file(session, file, upload_url):
     """Загрузить файл на Яндекс Диск."""
+    file_stream = getattr(file, 'stream', file)
     file.stream.seek(0)
 
     async with session.put(
