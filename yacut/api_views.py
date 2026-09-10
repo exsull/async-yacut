@@ -20,6 +20,28 @@ from .utils import get_unique_short_id
 from .validators import is_valid_url
 
 
+def validate_and_get_custom_id(custom_id):
+    if not isinstance(custom_id, str):
+        raise BadCustomIdError()
+
+    if custom_id == '':
+        return get_unique_short_id(URLMap)
+
+    if (
+        not MIN_LENGTH <= len(custom_id) <= SHORT_LINK_MAX_LENGTH
+        or not re.fullmatch(REGEXP, custom_id)
+    ):
+        raise BadCustomIdError()
+
+    if custom_id == 'files':
+        raise CustomIdIsFilesError()
+
+    if URLMap.query.filter_by(short=custom_id).first():
+        raise DuplicatedShortIdError()
+
+    return custom_id
+
+
 @app.route('/api/id/', methods=['POST'])
 def create_url():
     """Создание короткой ссылки."""
@@ -36,28 +58,8 @@ def create_url():
     if not is_valid_url(original):
         raise IncorrectUrlError()
 
-    if 'custom_id' in data:
-        custom_id = data['custom_id']
-
-        if custom_id is not None and not isinstance(custom_id, str):
-            raise BadCustomIdError()
-
-        if custom_id == '':
-            short = get_unique_short_id(URLMap)
-        else:
-            if (
-                not MIN_LENGTH <= len(custom_id) <= SHORT_LINK_MAX_LENGTH
-                or not re.fullmatch(REGEXP, custom_id)
-            ):
-                raise BadCustomIdError()
-
-            if custom_id == 'files':
-                raise CustomIdIsFilesError()
-
-            if URLMap.query.filter_by(short=custom_id).first():
-                raise DuplicatedShortIdError()
-
-            short = custom_id
+    if 'custom_id' in data and data['custom_id'] is not None:
+        short = validate_and_get_custom_id(data['custom_id'])
     else:
         short = get_unique_short_id(URLMap)
 
