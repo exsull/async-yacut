@@ -73,7 +73,6 @@ def invalid_api_usage(error):
 
 @app.errorhandler(HTTPStatus.NOT_FOUND)
 def page_not_found(error):
-    # Если клиент ожидает JSON (например, Postman или curl с заголовками)
     accept_type = request.accept_mimetypes.best_match(
         ['text/html', 'application/json'])
     if (
@@ -91,6 +90,7 @@ def page_not_found(error):
 
 @app.errorhandler(HTTPStatus.INTERNAL_SERVER_ERROR)
 def internal_error(error):
+    db.session.rollback()
     accept_type = request.accept_mimetypes.best_match(
         ['text/html', 'application/json']
     )
@@ -104,5 +104,4 @@ def internal_error(error):
             'error': 'Internal Server Error',
             'message': 'Внутренняя ошибка сервера.'
         }), HTTPStatus.INTERNAL_SERVER_ERROR
-    db.session.rollback()
     return render_template('500.html'), HTTPStatus.INTERNAL_SERVER_ERROR

@@ -1,10 +1,9 @@
 import secrets
-import string
 
 from flask import url_for
 
 from . import db
-from .constants import SHORT_CODE_MAX_LENGTH
+from .constants import ALLOWED_CHARACTERS, SHORT_CODE_MAX_LENGTH
 from .models import URLMap
 from .yandex_disk import (
     get_download_url,
@@ -15,15 +14,18 @@ from .yandex_disk import (
 
 def get_unique_short_id(model, length=SHORT_CODE_MAX_LENGTH):
     """Генерирует уникальный короткий идентификатор."""
-    characters = string.ascii_letters + string.digits
+    reserved_words = {'files'}
 
     while True:
         short = ''.join(
-            secrets.choice(characters)
+            secrets.choice(ALLOWED_CHARACTERS)
             for _ in range(length)
         )
 
-        if not model.query.filter_by(short=short).first():
+        if (
+            short not in reserved_words
+            and not model.query.filter_by(short=short).first()
+        ):
             return short
 
 
@@ -46,12 +48,6 @@ async def process_file(session, file):
     )
 
     short = get_unique_short_id(URLMap)
-
-    while (
-        short == 'files'
-        or URLMap.query.filter_by(short=short).first() is not None
-    ):
-        short = get_unique_short_id(URLMap)
 
     url_map = URLMap(
         original=download_url,

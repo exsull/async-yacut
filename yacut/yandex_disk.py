@@ -1,4 +1,5 @@
 from urllib.parse import unquote
+from uuid import uuid4
 
 from . import app
 
@@ -22,8 +23,8 @@ AUTH_HEADERS = {'Authorization': f'OAuth {DISK_TOKEN}'}
 async def get_upload_url(session, filename):
     """Получить URL для загрузки файла."""
     payload = {
-        'path': f'app:/{filename}',
-        'overwrite': 'True',
+        'path': f'app:/{uuid4()}_{filename}',
+        'overwrite': 'False',
     }
 
     async with session.get(

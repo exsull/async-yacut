@@ -5,7 +5,7 @@ from flask import jsonify, request, url_for
 from sqlalchemy.exc import IntegrityError
 
 from . import app, db
-from .constants import MIN_LENGTH, SHORT_LINK_MAX_LENGTH
+from .constants import MIN_LENGTH, REGEXP, SHORT_LINK_MAX_LENGTH
 from .error_handlers import (
     BadCustomIdError,
     CustomIdIsFilesError,
@@ -25,7 +25,7 @@ def create_url():
     """Создание короткой ссылки."""
     data = request.get_json(silent=True)
 
-    if not data:
+    if not isinstance(data, dict):
         raise MissingBodyError()
 
     if 'url' not in data:
@@ -36,23 +36,28 @@ def create_url():
     if not is_valid_url(original):
         raise IncorrectUrlError()
 
-    custom_id = data.get('custom_id')
+    if 'custom_id' in data:
+        custom_id = data['custom_id']
 
-    if custom_id:
-        if (
-            not isinstance(custom_id, str)
-            or not MIN_LENGTH <= len(custom_id) <= SHORT_LINK_MAX_LENGTH
-            or not re.fullmatch(r'[A-Za-z0-9]+', custom_id)
-        ):
+        if custom_id is not None and not isinstance(custom_id, str):
             raise BadCustomIdError()
 
-        if custom_id == 'files':
-            raise CustomIdIsFilesError()
+        if custom_id == '':
+            short = get_unique_short_id(URLMap)
+        else:
+            if (
+                not MIN_LENGTH <= len(custom_id) <= SHORT_LINK_MAX_LENGTH
+                or not re.fullmatch(REGEXP, custom_id)
+            ):
+                raise BadCustomIdError()
 
-        if URLMap.query.filter_by(short=custom_id).first():
-            raise DuplicatedShortIdError()
+            if custom_id == 'files':
+                raise CustomIdIsFilesError()
 
-        short = custom_id
+            if URLMap.query.filter_by(short=custom_id).first():
+                raise DuplicatedShortIdError()
+
+            short = custom_id
     else:
         short = get_unique_short_id(URLMap)
 

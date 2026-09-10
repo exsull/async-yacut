@@ -6,6 +6,15 @@ def is_valid_url(url):
     if not isinstance(url, str) or not url.strip():
         return False
 
-    parsed = urlparse(url)
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+    except ValueError:
+        return False
 
-    return parsed.scheme in ('http', 'https') and bool(parsed.netloc)
+    return (
+        parsed.scheme in ('http', 'https')
+        and bool(parsed.netloc)
+        and bool(hostname)
+        and ' ' not in hostname
+    )

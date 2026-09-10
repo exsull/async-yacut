@@ -1,5 +1,6 @@
-import aiohttp
 import asyncio
+
+import aiohttp
 from flask import flash, redirect, render_template, url_for
 
 from . import app, db
@@ -60,27 +61,7 @@ async def upload_files_view():
 
         db.session.commit()
 
-        table_rows = ''.join(
-            f'<tr>'
-            f'<td style="text-align: left; padding: 8px; '
-            f'padding-right: 50px; border-bottom: 1px solid #e0e0e0; '
-            f'max-width: 450px;">'
-            f'<div style="overflow: hidden; text-overflow: ellipsis; '
-            f'white-space: nowrap;">{filename}</div></td>'
-            f'<td style="text-align: left; padding: 8px; '
-            f'border-bottom: 1px solid #e0e0e0;">'
-            f'<a href="{link}" rel="noreferrer">{link}</a></td>'
-            f'</tr>'
-            for filename, link in results
-        )
-        links = (
-            f'<table style="border-collapse: collapse; '
-            f'width: 100%;">{table_rows}</table>'
-        )
+        flash('Файлы успешно загружены:')
 
-        flash(
-            f'Файлы успешно загружены:<br>{links}'
-        )
-
-        return render_template('files.html', form=form)
+        return render_template('files.html', form=form, results=results)
     return render_template('files.html', form=form)

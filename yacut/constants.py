@@ -1,4 +1,8 @@
+import string
+
 ORIGINAL_LINK_MAX_LENGTH = 256
 SHORT_LINK_MAX_LENGTH = 16
 SHORT_CODE_MAX_LENGTH = 6
 MIN_LENGTH = 1
+ALLOWED_CHARACTERS = string.ascii_letters + string.digits
+REGEXP = r'^[a-zA-Z0-9]{1,16}$'
